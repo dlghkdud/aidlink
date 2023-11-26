@@ -31,6 +31,9 @@
             color: #FFFFFF;
             left: 91%;
         }
+        .cdd{
+            z-index:400;
+        }
 
     </style>
 </head>
@@ -38,10 +41,13 @@
 <nav class="navbar">
     <div class="container-fluid">
         <a class="navbar-brand" href="#"><img class="logo" src="/static/image/logo.png"></a>
-        
+        <div class="cdd">
+            <!-- products 뷰를 호출하는 폼 -->
+            <form action="{% url 'deposit_products' %}" method="get">
+                <button type="submit" class="btn btn-primary">병원 정보 가져오기</button>
+            </form>
+        </div>
         <!-- <img class="search" src="/static/image/search.png"> -->
-        
-
     </div>
 </nav>
 <!-- 기본 템플릿 안에 삽입될 내용 Start -->
