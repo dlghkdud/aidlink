@@ -19,7 +19,7 @@ import os
 import environ
 
 # 환경변수를 불러올 수 있는 상태로 설정
-env = environ.Env(DEBUG=(bool, True))
+env = environ.Env(DEBUG=(bool, False))
 
 # 읽어올 환경 변수 파일을 지정
 environ.Env.read_env(
