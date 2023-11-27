@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagination Example</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/boxicons/2.0.7/css/boxicons.min.css">
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .post-list {
+            list-style: none;
+            padding: 0;
+            width: 80%;
+        }
+        .post-item {
+            border: 1px solid #ccc;
+            margin: 10px 0;
+            padding: 25px;
+            font-size: 18px;
+        }
+        .pagination {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            width: 80%;
+            justify-content: center;
+        }
+        .pagination li {
+            margin-right: 5px;
+            cursor: pointer;
+        }
+        .pagination li.active {
+            font-weight: bold;
+        }
+        .search-container {
+        width: 80%;
+        margin-bottom: 20px; 
+        display: flex;
+        align-items: center;
+        border: 1px solid #ccc; 
+        border-radius: 5px; 
+        overflow: hidden; 
+        }
+        #searchInput {
+            flex: 1;
+            padding: 20px;
+            border: none; 
+            outline: none; 
+            font-size: 20px; 
+        }
+        .search-btn {
+            background: url('/static/image/search.png') no-repeat;
+            background-size: cover;
+            width: 32px;
+            height: 32px;
+            border: none; 
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="병원 검색">
+            <button onclick="searchHospitals()" class="search-btn"></button>
+        </div>
+        <ul class="post-list" id="postList">
+        </ul>
+        <ul class="pagination" id="pagination">
+            <li onclick="prevPage()"><i class="bx bx-chevron-left"></i></li>
+            <li onclick="nextPage()"><i class="bx bx-chevron-right"></i></li>
+        </ul>
+    </div>
+
+    <script>
+        const hospitals = [
+            { title: '병원 1', dutyAddr: '주소 1', dutyTel1: '010-1111-1111', dutyTel3: '02-1234-5678' },
+            { title: '병원 2', dutyAddr: '주소 2', dutyTel1: '010-2222-2222', dutyTel3: '02-2345-6789' },
+            { title: '병원 3', dutyAddr: '주소 3', dutyTel1: '010-3333-3333', dutyTel3: '02-3456-7890' },
+            { title: '병원 4', dutyAddr: '주소 4', dutyTel1: '010-4444-4444', dutyTel3: '02-4567-8901' },
+            { title: '병원 5', dutyAddr: '주소 5', dutyTel1: '010-5555-5555', dutyTel3: '02-5678-9012' },
+            { title: '병원 6', dutyAddr: '주소 1', dutyTel1: '010-1111-1111', dutyTel3: '02-1234-5678' },
+            { title: '병원 7', dutyAddr: '주소 2', dutyTel1: '010-2222-2222', dutyTel3: '02-2345-6789' },
+            { title: '병원 8', dutyAddr: '주소 3', dutyTel1: '010-3333-3333', dutyTel3: '02-3456-7890' },
+            { title: '병원 9', dutyAddr: '주소 4', dutyTel1: '010-4444-4444', dutyTel3: '02-4567-8901' },
+            { title: '병원 10', dutyAddr: '주소 5', dutyTel1: '010-5555-5555', dutyTel3: '02-5678-9012' },
+            { title: '병원 11', dutyAddr: '주소 1', dutyTel1: '010-1111-1111', dutyTel3: '02-1234-5678' },
+            { title: '병원 12', dutyAddr: '주소 2', dutyTel1: '010-2222-2222', dutyTel3: '02-2345-6789' },
+            { title: '병원 13', dutyAddr: '주소 3', dutyTel1: '010-3333-3333', dutyTel3: '02-3456-7890' },
+            { title: '병원 14', dutyAddr: '주소 4', dutyTel1: '010-4444-4444', dutyTel3: '02-4567-8901' },
+            { title: '병원 15', dutyAddr: '주소 5', dutyTel1: '010-5555-5555', dutyTel3: '02-5678-9012' },
+            { title: '병원 16', dutyAddr: '주소 1', dutyTel1: '010-1111-1111', dutyTel3: '02-1234-5678' },
+            { title: '병원 17', dutyAddr: '주소 2', dutyTel1: '010-2222-2222', dutyTel3: '02-2345-6789' },
+            { title: '병원 18', dutyAddr: '주소 3', dutyTel1: '010-3333-3333', dutyTel3: '02-3456-7890' },
+            { title: '병원 19', dutyAddr: '주소 4', dutyTel1: '010-4444-4444', dutyTel3: '02-4567-8901' },
+            { title: '병원 20', dutyAddr: '주소 5', dutyTel1: '010-5555-5555', dutyTel3: '02-5678-9012' },
+            { title: '병원 21', dutyAddr: '주소 1', dutyTel1: '010-1111-1111', dutyTel3: '02-1234-5678' },
+            { title: '병원 22', dutyAddr: '주소 2', dutyTel1: '010-2222-2222', dutyTel3: '02-2345-6789' },
+            { title: '병원 23', dutyAddr: '주소 3', dutyTel1: '010-3333-3333', dutyTel3: '02-3456-7890' },
+            { title: '병원 24', dutyAddr: '주소 4', dutyTel1: '010-4444-4444', dutyTel3: '02-4567-8901' },
+            { title: '병원 25', dutyAddr: '주소 5', dutyTel1: '010-5555-5555', dutyTel3: '02-5678-9012' },
+        ];
+
+        const perPage = 4; 
+        let currentPage = 1;
+        let filteredHospitals = hospitals;
+
+        function renderPagination() {
+            const totalPages = Math.ceil(filteredHospitals.length / perPage);
+            const paginationElement = document.getElementById('pagination');
+            paginationElement.innerHTML = '';
+
+            for (let i = 1; i <= totalPages; i++) {
+                const li = document.createElement('li');
+                li.textContent = i;
+                li.addEventListener('click', () => {
+                    currentPage = i;
+                    renderHospitals();
+                    highlightActivePage();
+                });
+                paginationElement.appendChild(li);
+            }
+
+            highlightActivePage();
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderHospitals();
+                highlightActivePage();
+            }
+        }
+
+        function nextPage() {
+            const totalPages = Math.ceil(filteredHospitals.length / perPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderHospitals();
+                highlightActivePage();
+            }
+        }
+        function highlightActivePage() {
+            const paginationElement = document.getElementById('pagination');
+            const pages = paginationElement.getElementsByTagName('li');
+
+            for (let page of pages) {
+                page.classList.remove('active');
+            }
+
+            pages[currentPage - 1].classList.add('active');
+        }
+
+        function renderHospitals() {
+            const postListElement = document.getElementById('postList');
+            postListElement.innerHTML = '';
+
+            const startIndex = (currentPage - 1) * perPage;
+            const endIndex = currentPage * perPage;
+            const displayHospitals = filteredHospitals.slice(startIndex, endIndex);
+
+            for (let hospital of displayHospitals) {
+                const li = document.createElement('li');
+                li.classList.add('post-item');
+                li.innerHTML = `
+                    <strong>${hospital.title}</strong><br>
+                    주소: ${hospital.dutyAddr}<br>
+                    대표번호: ${hospital.dutyTel1}<br>
+                    응급실: ${hospital.dutyTel3}
+                `;
+                postListElement.appendChild(li);
+            }
+        }
+
+        function searchHospitals() {
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            filteredHospitals = hospitals.filter(hospital =>
+                hospital.title.toLowerCase().includes(searchInput)
+            );
+            currentPage = 1;
+            renderHospitals();
+            renderPagination();
+        }
+
+        renderHospitals();
+        renderPagination();
+
+    </script>
+</body>
+</html>
+{% endblock %}
