@@ -8,7 +8,7 @@ from django.conf import settings
 import requests, json
 from django.shortcuts import render
 from django.conf import settings
-from .models import Main, HOSPITAL_BASIC_INFO
+from .models import Main, HOSPITAL_BASIC_INFO, LOCATIONS
 
 API_KEY = settings.API_KEY
 
@@ -37,7 +37,7 @@ def show_hospitals(request):
     print(hospital_data_json)  # 확인용으로 출력
 
     context = {'hospital_data_json': hospital_data_json}
-    return render(request, 'main.html', context)
+    return render(request, '../templates/main.html', context)
 
 
 @api_view(['GET'])
@@ -45,17 +45,8 @@ def products(request):
     url = 'kQnQFRU7OHDKRkafFKoYJfu%2B4JJBugnF%2BlwPKX1Gg8IlRPHAJq4%2FUtbVSh2wK7zzmF0xHWronkOI67LCGZM38g%3D%3D'
     # API 데이터를 생성
     params = {
-        '기관ID': 'hpid',
-        '구기관ID': 'phpid',
-        '응급의료기관분류' : 'duty_emcls',
-        '응급의료기관분류명' : 'duty_emcls_name',
-        '주소' : 'duty_addr',
-        '기관명' : 'duty_name',
-        '대표전화1' : 'duty_tel1',
-        '응급실전화' : 'duty_tel3' ,
-        '병원경도' : 'wgs_84_lon',
-        '병원위도' : 'wgs_84_lat',
-        '응급/외상센터구분' : 'center_type',
+        '주소(시도)' : '서울시',
+        '주소(시군구)' : '강남구',
     }
 
     try:
@@ -80,7 +71,7 @@ def products(request):
             )
             your_model_instance.save()
 
-        return render(request, 'your_template.html', {'data': data})
+        return render(request, '../templates/main.html', {'data': data})
     
     except requests.RequestException as e:
         # 요청 실패 처리

@@ -34,19 +34,47 @@
 
 		var locations = JSON.parse('{{ hospital_data_json|escapejs|safe }}');
 
-    function displayMarkers() {
-        for (var i = 0; i < locations.length; i++) {
-            var markerPosition = new kakao.maps.LatLng(locations[i].latitude, locations[i].longitude);
+		function displayMarkers() {
+			for (var i = 0; i < locations.length; i++) {
+				var markerPosition = new kakao.maps.LatLng(locations[i].latitude.toFixed(6), locations[i].longitude.toFixed(6));
 
-            var marker = new kakao.maps.Marker({
-                map: map,
-                position: markerPosition,
-                title: locations[i].title
-            });
-        }
-    }
+				var marker = new kakao.maps.Marker({
+					position: markerPosition,
+				});
+
+				marker.setMap(null);
+
+				// 클로저를 사용하여 마커별로 오버레이를 생성하도록 수정
+				(function(marker, content) {
+            		kakao.maps.event.addListener(marker, 'click', function() {
+                		var overlay = new kakao.maps.CustomOverlay({
+							content: content,
+							map: map,
+							position: marker.getPosition()
+					});
+            	});
+        	})(marker, createContent(locations[i])); // 오버레이에 표시될 내용을 생성하는 함수 호출
+		}
+	}
 
     displayMarkers();
+
+	function createContent(location) {
+		// 오버레이에 표시될 내용을 동적으로 생성
+		var content = '<div style="padding:5px;">' +
+			location.title + (location.center_type === "0" ? "(응급)" : "(외상)") +
+			'<div style="float:right;"><button onclick="closeOverlay()">X</button></div>' +
+			'<div>' + location.duty_addr +
+			'<div>대표 : ' + location.duty_tel1 +
+			'<div>응급실 : ' + location.duty_tel3 +
+			'</div></div></div></div>';
+    	return content;
+	}
+
+	function closeOverlay() {
+		// 오버레이를 닫는 함수
+		overlay.setMap(null);
+	}
 
     </script>
 {% endblock %}
