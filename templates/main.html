@@ -1,7 +1,27 @@
+<!--appkey=29dab7759b80c1a6d8a5f31d57792672-->
+
 {% extends 'base.html' %}
 {% block content %}
     <div id="map" style="width:100%;height:100vh;"></div>
-    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=29dab7759b80c1a6d8a5f31d57792672"></script>
+    <button onclick="loadHospitalData()" class="emergency-button">응급실 찾기</button>
+    <style>
+        .emergency-button {
+            z-index:500;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+	<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=29dab7759b80c1a6d8a5f31d57792672"></script>
     <script>
         var container = document.getElementById('map');
         var options = {
@@ -17,47 +37,43 @@
                 navigator.geolocation.getCurrentPosition(function(position) {
                     var latitude = position.coords.latitude; // 현재 위도
                     var longitude = position.coords.longitude; // 현재 경도
-
                     var locPosition = new kakao.maps.LatLng(latitude, longitude);
-
                     map.setCenter(locPosition);
                 }, function(error) {
                     console.error('Geolocation error:', error);
-                });
-            } else {
-                console.error('Geolocation is not supported by this browser.');
+				})
             }
         }
 
         // setCurrentLocation 함수 호출
         setCurrentLocation();
 
-		var locations = JSON.parse('{{ hospital_data_json|escapejs|safe }}');
-
-		function displayMarkers() {
-			for (var i = 0; i < locations.length; i++) {
-				var markerPosition = new kakao.maps.LatLng(locations[i].latitude.toFixed(6), locations[i].longitude.toFixed(6));
-
-				var marker = new kakao.maps.Marker({
-					position: markerPosition,
-				});
-
-				marker.setMap(null);
-
-				// 클로저를 사용하여 마커별로 오버레이를 생성하도록 수정
-				(function(marker, content) {
-            		kakao.maps.event.addListener(marker, 'click', function() {
-                		var overlay = new kakao.maps.CustomOverlay({
-							content: content,
-							map: map,
-							position: marker.getPosition()
-					});
-            	});
-        	})(marker, createContent(locations[i])); // 오버레이에 표시될 내용을 생성하는 함수 호출
-		}
-	}
-
-    displayMarkers();
+		var map;
+        function displayMarkers(locations) {
+            console.log("Displaying markers function called", locations);
+            for (var i = 0; i < locations.length; i++) {
+                console.log("Creating marker for:", locations[i]);
+                console.log(locations[i].longitude.toFixed(6), locations[i].latitude.toFixed(6))
+                var markerPosition = new kakao.maps.LatLng(locations[i].latitude.toFixed(6), locations[i].longitude.toFixed(6));
+                var marker = new kakao.maps.Marker({
+                    position: markerPosition,
+                });
+                marker.setMap(map)
+            }
+        }
+        function loadHospitalData() {
+            console.log("Fetching hospital data...");
+            fetch('/aidlink/products/')
+                .then(response => {
+                    console.log("Response received", response);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Data processed", data);
+                    displayMarkers(data);
+                })
+                .catch(error => console.error('Error:', error));
+            	}
 
 	function createContent(location) {
 		// 오버레이에 표시될 내용을 동적으로 생성
@@ -77,5 +93,14 @@
 	}
 
     </script>
+
+<style>
+	.emergency-button {
+		position: fixed;
+		bottom: 20px;
+		right: 20px;
+		/* 버튼 스타일 */
+	}
+</style>
 {% endblock %}
 

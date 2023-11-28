@@ -8,10 +8,12 @@ from django.conf import settings
 import requests, json
 from django.shortcuts import render
 from django.conf import settings
-from .models import Main, HOSPITAL_BASIC_INFO, LOCATIONS
+from .models import Main, HOSPITAL_BASIC_INFO
+import xml.etree.ElementTree as ET
+from django.http import JsonResponse
+from .models import HOSPITAL_BASIC_INFO
 
 API_KEY = settings.API_KEY
-
 
 def index(request):
     main = Main.objects.order_by('-create_date')
@@ -37,43 +39,36 @@ def show_hospitals(request):
     print(hospital_data_json)  # 확인용으로 출력
 
     context = {'hospital_data_json': hospital_data_json}
-    return render(request, '../templates/main.html', context)
-
+    return render(request, 'main.html', context)
 
 @api_view(['GET'])
 def products(request):
-    url = 'kQnQFRU7OHDKRkafFKoYJfu%2B4JJBugnF%2BlwPKX1Gg8IlRPHAJq4%2FUtbVSh2wK7zzmF0xHWronkOI67LCGZM38g%3D%3D'
-    # API 데이터를 생성
+    print("products")
+    url = 'http://apis.data.go.kr/B552657/ErmctInfoInqireService/getEgytListInfoInqire'
     params = {
-        '주소(시도)' : '서울시',
-        '주소(시군구)' : '강남구',
+        'Q0': '서울특별시',
+        'Q1': '강남구'
     }
-
     try:
         response = requests.get(url, params=params)
-        response.raise_for_status()  # 상태 코드에 따라 HTTPError 발생
+        response.raise_for_status()
+        root = ET.fromstring(response.content)
 
-        data = response.json()
+        hospital_data = []
 
-        for item in data['results']:
-            your_model_instance = HOSPITAL_BASIC_INFO(
-                hpid = item['기관ID'],
-                phpid = item['구기관ID'],
-                duty_emcls = item['응급의료기관분류'],
-                duty_emcls_name = item['응급의료기관분류명'],
-                duty_addr = item['주소'],
-                duty_name = item['기관명'],
-                duty_tel1 = item['대표전화1'],
-                duty_tel3 = item['응급실전화'],
-                wgs_84_lon = item['병원경도'],
-                wgs_84_lat = item['병원위도'],
-                center_type = item['응급/외상센터구분'],
-            )
-            your_model_instance.save()
-
-        return render(request, '../templates/main.html', {'data': data})
+        for item in root.findall('.//item'):
+            data = {
+                'latitude': float(item.find('wgs84Lat').text),
+                'longitude': float(item.find('wgs84Lon').text),
+                'title': item.find('dutyName').text,    #병원명
+                'dutyTel1': item.find('dutyTel1').text, #대표번호
+                'dutyTel3': item.find('dutyTel3').text, #응급실 번호
+                'dutyAddr': item.find('dutyAddr').text  #주소
+            }
+            hospital_data.append(data)
+        return JsonResponse(hospital_data, safe=False)
+    except Exception as e:
+            return JsonResponse({'error': str(e)})
     
-    except requests.RequestException as e:
-        # 요청 실패 처리
-        print(f"요청 실패: {e}")
-        return render(request, 'error_template.html', {'error_message': '데이터를 가져오는 데 실패했습니다.'})
+def products_api(request):
+    return render(request, '../templates/products.html')
