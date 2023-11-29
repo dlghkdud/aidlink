@@ -16,7 +16,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 20px;
+            padding: 10px 15px;
+            height: 40px;
         }
         .navbar a {
             color: white;
@@ -62,12 +63,11 @@
             background-color: #71a790;
         }
         .logo {
-            width: 65px; 
-            margin-left: 10px; 
+            width: 45px; 
+            margin-top: 2px;
         }
         .search {
-            width: 26px;
-            margin-right: 10px; 
+            width: 32px;
         }
         @media screen and (max-width: 600px) {
             .navbar a, .dropdown .dropbtn {
@@ -113,7 +113,7 @@
         <img class="logo" src="{% static 'image/logo.png' %}">
     </a>
     <div class="dropdown">
-        <form action="{% url 'deposit_products' %}" method="get">
+        <form action="{% url 'aidlink:index' %}" method="get">
             <button type="submit" class="btn btn-primary">병원 정보 가져오기</button>
         </form>
         <a href="{% url 'aidlink:products_api' %}">
